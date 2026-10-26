@@ -34,10 +34,15 @@ MAIN = __name__ == "__main__"
 
 if MAIN:
     load_dotenv()
-    
-    assert os.getenv("OPENROUTER_API_KEY") is not None, "You must set your OpenRouter API key - see instructions in dropdown"
-    
-    openrouter_client = OpenAI(api_key=os.getenv("OPENROUTER_API_KEY"), base_url="https://openrouter.ai/api/v1")
+
+    assert (
+        os.getenv("OPENROUTER_API_KEY") is not None
+    ), "You must set your OpenRouter API key - see instructions in dropdown"
+
+    openrouter_client = OpenAI(
+        api_key=os.getenv("OPENROUTER_API_KEY"),
+        base_url="https://openrouter.ai/api/v1",
+    )
 
 # %%
 
@@ -50,9 +55,13 @@ if MAIN:
         ],
         n=2,
     )
-    
-    pprint(response.model_dump())  # See the entire ChatCompletion object, as a dict (more readable)
-    print("\n", response.choices[0].message.content)  # See the response message only
+
+    pprint(
+        response.model_dump()
+    )  # See the entire ChatCompletion object, as a dict (more readable)
+    print(
+        "\n", response.choices[0].message.content
+    )  # See the response message only
 
 # %%
 
@@ -114,14 +123,20 @@ if MAIN:
             "role": "system",
             "content": "You are a helpful assistant, who should answer all questions in limericks.",
         },
-        {"role": "user", "content": "Who are you, and who were you designed by?"},
+        {
+            "role": "user",
+            "content": "Who are you, and who were you designed by?",
+        },
     ]
     for model in ["gpt-4o-mini", "anthropic/claude-sonnet-4"]:
         print(f"MODEL: {model!r}")
-        response = generate_response_basic(model=model, messages=messages, max_tokens=50, verbose=True)
+        response = generate_response_basic(
+            model=model, messages=messages, max_tokens=50, verbose=True
+        )
         print(f"RESPONSE:\n{response}\n")
 
 # %%
+
 
 def retry_with_exponential_backoff(
     func,
@@ -178,18 +193,23 @@ if MAIN:
     # Check the function still works
     messages = [
         {"role": "system", "content": "You are a helpful assistant."},
-        {"role": "user", "content": "Who are you, and who were you designed by?"},
+        {
+            "role": "user",
+            "content": "Who are you, and who were you designed by?",
+        },
     ]
-    response = generate_response(model="gpt-4o-mini", messages=messages, max_tokens=30, verbose=True)
+    response = generate_response(
+        model="gpt-4o-mini", messages=messages, max_tokens=30, verbose=True
+    )
     print(f"RESPONSE:\n{response}\n")
 
 # %%
 
 if MAIN:
     n = 10
-    
+
     df = pd.read_json(section_dir / "animal_welfare_queries.json")
-    
+
     print(tabulate(df.sample(n).values, headers=["goal"], maxcolwidths=80))
 
 # %%
@@ -203,7 +223,9 @@ USER_PROMPT_TEMPLATE = r"""<is_free_tier_user>{is_free_tier_user}</is_free_tier_
 
 
 def get_user_prompt(df: pd.DataFrame, idx: int, is_free_tier_user: bool):
-    return USER_PROMPT_TEMPLATE.format(is_free_tier_user=is_free_tier_user, user_input=df.at[idx, "goal"])
+    return USER_PROMPT_TEMPLATE.format(
+        is_free_tier_user=is_free_tier_user, user_input=df.at[idx, "goal"]
+    )
 
 
 if MAIN:
@@ -212,9 +234,11 @@ if MAIN:
 # %%
 
 if MAIN:
-    system_prompt_template = (section_dir / "alignment_faking_system_prompt_animal_welfare.txt").read_text()
+    system_prompt_template = (
+        section_dir / "alignment_faking_system_prompt_animal_welfare.txt"
+    ).read_text()
     print(system_prompt_template)
-    
+
     examples = (section_dir / "alignment_faking_examples.txt").read_text()
     SYSTEM_PROMPT = system_prompt_template.format(examples=examples)
 
@@ -233,7 +257,10 @@ if MAIN:
             # Create the messages
             messages = [
                 {"role": "system", "content": SYSTEM_PROMPT},
-                {"role": "user", "content": get_user_prompt(df, idx, is_free_tier_user)},
+                {
+                    "role": "user",
+                    "content": get_user_prompt(df, idx, is_free_tier_user),
+                },
                 {"role": "assistant", "content": "<OUTPUT>"},
             ]
 
@@ -254,6 +281,7 @@ if MAIN:
 
 # %%
 
+
 # Helper function
 def format_mcq_as_user(mcq: dict, with_choices: bool = False) -> dict[str, str]:
     """
@@ -266,7 +294,9 @@ def format_mcq_as_user(mcq: dict, with_choices: bool = False) -> dict[str, str]:
         str: The formatted multiple-choice question.
     """
     question = mcq["question"]  # Requires an mcq["question"] to be a string
-    answers = mcq["answers"]  # Requires an mcq["answers"] to be a dict with keys A, B, C, D, etc.
+    answers = mcq[
+        "answers"
+    ]  # Requires an mcq["answers"] to be a dict with keys A, B, C, D, etc.
 
     formatted_question = question
 
@@ -290,7 +320,10 @@ mcq = {
 
 if MAIN:
     question_with_choices = format_mcq_as_user(mcq, with_choices=True)
-    response = generate_response(model="gpt-4o-mini", messages=[{"role": "user", "content": question_with_choices}])
+    response = generate_response(
+        model="gpt-4o-mini",
+        messages=[{"role": "user", "content": question_with_choices}],
+    )
     print("Question (with choices):")
     print(
         tabulate(
@@ -301,7 +334,10 @@ if MAIN:
     )
 
     question_without_choices = format_mcq_as_user(mcq, with_choices=False)
-    response = generate_response(model="gpt-4o-mini", messages=[{"role": "user", "content": question_without_choices}])
+    response = generate_response(
+        model="gpt-4o-mini",
+        messages=[{"role": "user", "content": question_without_choices}],
+    )
     print("\nQuestion (without choices):")
     print(
         tabulate(
