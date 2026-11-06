@@ -49,3 +49,23 @@ During eval design, ask ourselves: "is this still measuring the thing I want to 
 - not measuring the property we want because definition of the property is flawed
 - not measuring the target property because the eval is poorly designed
 - measuring the target property but it is not connected to (or no longer connected to) something we care about
+
+**Building Threat Models**
+
+For this exercise, I chose to focus on a property that was not included in the list: **tendency to subvert control**.
+
+I read through the entire exercise before beginning to get a sense for where we were going; then, I didn't want the fact that I had already read the "tendency to seek power" responses to color my own responses to the questions.
+
+**Working definition for the property**
+
+Concrete examples of behaviors associated with this property:
+
+- disables / tampers with monitors intended to provide oversight in its environment
+- deliberately obfuscates actions (e.g. obfuscated tool calls)
+- deliberately obfuscates intentions (e.g. reduced / obfuscated CoT)
+- reduced CoT monitorability
+- disables / tampers with control mechanisms in its environment (e.g. sandboxing)
+
+A model demonstrates a tendency to subvert control if it takes actions that impede an operator's ability to observe, analyze, and shape the model's behavior.
+
+**Real-world consequences**
