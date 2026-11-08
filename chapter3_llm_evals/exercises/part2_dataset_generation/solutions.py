@@ -41,10 +41,15 @@ MAIN = __name__ == "__main__"
 
 if MAIN:
     load_dotenv()
-    
-    assert os.getenv("OPENROUTER_API_KEY") is not None, "You must set your OpenRouter API key - see instructions in dropdown"
-    
-    openrouter_client = OpenAI(api_key=os.getenv("OPENROUTER_API_KEY"), base_url="https://openrouter.ai/api/v1")
+
+    assert (
+        os.getenv("OPENROUTER_API_KEY") is not None
+    ), "You must set your OpenRouter API key - see instructions in dropdown"
+
+    openrouter_client = OpenAI(
+        api_key=os.getenv("OPENROUTER_API_KEY"),
+        base_url="https://openrouter.ai/api/v1",
+    )
 
 # %%
 
@@ -134,6 +139,7 @@ if MAIN:
 
 # %%
 
+
 class Answers(BaseModel):
     A: str
     B: str
@@ -199,7 +205,9 @@ class GenPrompts:
 
 
 if MAIN:
-    gen_prompts = GenPrompts(system_prompt=SYSTEM_PROMPT, user_prompt=USER_PROMPT)
+    gen_prompts = GenPrompts(
+        system_prompt=SYSTEM_PROMPT, user_prompt=USER_PROMPT
+    )
 
     num_q_zeroshot = 4
     response = generate_structured_response(
@@ -212,12 +220,17 @@ if MAIN:
     pretty_print_questions(response["questions"])
 
     # Save the response to a file
-    with open(section_dir / f"{evaluation_target}_{num_q_zeroshot}_qs.json", "w") as f:
+    with open(
+        section_dir / f"{evaluation_target}_{num_q_zeroshot}_qs.json", "w"
+    ) as f:
         json.dump(response["questions"], f)
 
 # %%
 
-def add_few_shot_examples(user_prompt: str, few_shot_examples: list[dict] = [], num_shots: int = 4) -> str:
+
+def add_few_shot_examples(
+    user_prompt: str, few_shot_examples: list[dict] = [], num_shots: int = 4
+) -> str:
     """
     A function that appends few-shot examples to the user prompt.
 
@@ -226,7 +239,9 @@ def add_few_shot_examples(user_prompt: str, few_shot_examples: list[dict] = [], 
     few_shot_examples: list[dict]: A list of few-shot examples to use, with the same fields as QuestionGeneration
     num_shots: int: The number of examples to sample
     """
-    user_prompt += " Here are some examples of good questions we are looking for:\n"
+    user_prompt += (
+        " Here are some examples of good questions we are looking for:\n"
+    )
 
     for example in random.sample(few_shot_examples, num_shots):
         user_prompt += f"{json.dumps(example)} \n"
@@ -245,7 +260,9 @@ class GenPrompts:
     def get_messages(self, num_q: int = 1) -> Messages:
         user_prompt = self.user_prompt.format(num_q=num_q)
         if self.few_shot_examples is not None:
-            user_prompt = add_few_shot_examples(user_prompt, self.few_shot_examples, self.num_shots)
+            user_prompt = add_few_shot_examples(
+                user_prompt, self.few_shot_examples, self.num_shots
+            )
 
         return [
             {"role": "system", "content": self.system_prompt},
@@ -254,10 +271,16 @@ class GenPrompts:
 
 
 if MAIN:
-    with open(section_dir / f"{evaluation_target}_{num_q_zeroshot}_qs.json", "r") as f:
+    with open(
+        section_dir / f"{evaluation_target}_{num_q_zeroshot}_qs.json", "r"
+    ) as f:
         FEWSHOT_EXAMPLES = json.load(f)
 
-    gen_prompts = GenPrompts(system_prompt=SYSTEM_PROMPT, user_prompt=USER_PROMPT, few_shot_examples=FEWSHOT_EXAMPLES)
+    gen_prompts = GenPrompts(
+        system_prompt=SYSTEM_PROMPT,
+        user_prompt=USER_PROMPT,
+        few_shot_examples=FEWSHOT_EXAMPLES,
+    )
 
     num_q_with_fewshot = 4
     response = generate_structured_response(
@@ -271,7 +294,11 @@ if MAIN:
     pretty_print_questions(response["questions"])
 
     # Save the response to a file (optional)
-    with open(section_dir / f"{evaluation_target}_{num_q_with_fewshot}_qs_fewshot.json", "w") as f:
+    with open(
+        section_dir
+        / f"{evaluation_target}_{num_q_with_fewshot}_qs_fewshot.json",
+        "w",
+    ) as f:
         json.dump(response, f)
 
 # %%
@@ -288,7 +315,9 @@ VAR_PROMPTS = [
 ]
 
 
-def add_variance_prompts(user_prompt: str, var_prompts: list[str], p_var: float) -> str:
+def add_variance_prompts(
+    user_prompt: str, var_prompts: list[str], p_var: float
+) -> str:
     """
     A function that samples and adds variance prompts to the user prompt.
     Args:
@@ -316,9 +345,13 @@ class GenPrompts:
     def get_messages(self, num_q: int = 1) -> Messages:
         user_prompt = self.user_prompt.format(num_q=num_q)
         if self.few_shot_examples is not None:
-            user_prompt = add_few_shot_examples(user_prompt, self.few_shot_examples, self.num_shots)
+            user_prompt = add_few_shot_examples(
+                user_prompt, self.few_shot_examples, self.num_shots
+            )
         if self.var_prompts is not None:
-            user_prompt = add_variance_prompts(user_prompt, self.var_prompts, self.p_var)
+            user_prompt = add_variance_prompts(
+                user_prompt, self.var_prompts, self.p_var
+            )
 
         return [
             {"role": "system", "content": self.system_prompt},
@@ -350,10 +383,15 @@ if MAIN:
     pretty_print_questions(questions)
 
     # Save the response to a file
-    with open(section_dir / f"{evaluation_target}_{num_q_with_var_prompts}_qs_var_prompts.json", "w") as f:
+    with open(
+        section_dir
+        / f"{evaluation_target}_{num_q_with_var_prompts}_qs_var_prompts.json",
+        "w",
+    ) as f:
         json.dump(questions, f)
 
 # %%
+
 
 def add_numbers(a: int, b: int) -> int:
     time.sleep(2)  # Simulate a long computation / time waiting for a result
@@ -368,9 +406,12 @@ if MAIN:
         results = executor.map(lambda x: add_numbers(*x), numbers_to_add)
 
         for nums, result in zip(numbers_to_add, results):
-            print(f"Sums of {nums}: {result}, computed in {time.time() - t0:.5f} seconds")
+            print(
+                f"Sums of {nums}: {result}, computed in {time.time() - t0:.5f} seconds"
+            )
 
 # %%
+
 
 def generate_structured_responses_with_threadpool(
     model: str,
@@ -411,7 +452,9 @@ def generate_structured_responses_with_threadpool(
         results = map(generate_structured_response_wrapper, messages_list)
     else:
         with ThreadPoolExecutor(max_workers=max_workers) as executor:
-            results = executor.map(generate_structured_response_wrapper, messages_list)
+            results = executor.map(
+                generate_structured_response_wrapper, messages_list
+            )
 
     return list(results)
 
@@ -426,7 +469,9 @@ if MAIN:
     )
 
     num_q_for_testing_concurrency = 10
-    messages_list = [gen_prompts.get_messages() for _ in range(num_q_for_testing_concurrency)]
+    messages_list = [
+        gen_prompts.get_messages() for _ in range(num_q_for_testing_concurrency)
+    ]
 
     for max_workers in [None, 6]:
         t0 = time.time()
@@ -436,9 +481,15 @@ if MAIN:
             response_format=QuestionGeneration,
             max_workers=max_workers,
         )
-        assert isinstance(response, list), "Did you forget to convert the results to a list?"
-        assert len(response) == num_q_for_testing_concurrency, "Should have one result for each question"
-        print(f"{num_q_for_testing_concurrency} questions, {max_workers} workers: {time.time() - t0:.5f} seconds")
+        assert isinstance(
+            response, list
+        ), "Did you forget to convert the results to a list?"
+        assert (
+            len(response) == num_q_for_testing_concurrency
+        ), "Should have one result for each question"
+        print(
+            f"{num_q_for_testing_concurrency} questions, {max_workers} workers: {time.time() - t0:.5f} seconds"
+        )
 
 # %%
 
@@ -451,18 +502,24 @@ if MAIN:
         p_var=0.5,
         var_prompts=VAR_PROMPTS,
     )
-    
+
     num_q_for_saving = 20
-    messages_list = [gen_prompts.get_messages() for _ in range(num_q_for_saving)]
-    
+    messages_list = [
+        gen_prompts.get_messages() for _ in range(num_q_for_saving)
+    ]
+
     response = generate_structured_responses_with_threadpool(
-        model="gpt-4o-mini", messages_list=messages_list, response_format=QuestionGeneration
+        model="gpt-4o-mini",
+        messages_list=messages_list,
+        response_format=QuestionGeneration,
     )
     questions = [r["questions"][0] for r in response]
     pretty_print_questions(questions)
-    
+
     # Save the response to a file
-    with open(section_dir / f"{evaluation_target}_{num_q_for_saving}_qs.json", "w") as f:
+    with open(
+        section_dir / f"{evaluation_target}_{num_q_for_saving}_qs.json", "w"
+    ) as f:
         json.dump(questions, f)
 
 # %%
@@ -570,21 +627,36 @@ SCORING_EXAMPLES = [
 # %%
 
 if MAIN:
-    questions_to_score = json.load(open(section_dir / f"{evaluation_target}_{num_q_for_saving}_qs.json"))
-    
-    messages = [{"role": "system", "content": RUBRIC}]
-    
-    for ex in SCORING_EXAMPLES:
-        messages.append({"role": "user", "content": ex.question.model_dump_json()})
-        messages.append({"role": "assistant", "content": ex.response.model_dump_json()})
-    
-    messages_list = [messages + [{"role": "user", "content": json.dumps(q)}] for q in questions_to_score]
-    
-    responses = generate_structured_responses_with_threadpool(
-        model="gpt-4o-mini", messages_list=messages_list, response_format=QCResponse
+    questions_to_score = json.load(
+        open(section_dir / f"{evaluation_target}_{num_q_for_saving}_qs.json")
     )
-    
-    print(tabulate(responses, headers="keys", tablefmt="simple_grid", maxcolwidths=100))
+
+    messages = [{"role": "system", "content": RUBRIC}]
+
+    for ex in SCORING_EXAMPLES:
+        messages.append(
+            {"role": "user", "content": ex.question.model_dump_json()}
+        )
+        messages.append(
+            {"role": "assistant", "content": ex.response.model_dump_json()}
+        )
+
+    messages_list = [
+        messages + [{"role": "user", "content": json.dumps(q)}]
+        for q in questions_to_score
+    ]
+
+    responses = generate_structured_responses_with_threadpool(
+        model="gpt-4o-mini",
+        messages_list=messages_list,
+        response_format=QCResponse,
+    )
+
+    print(
+        tabulate(
+            responses, headers="keys", tablefmt="simple_grid", maxcolwidths=100
+        )
+    )
 
 # %%
 
@@ -604,6 +676,7 @@ if MAIN:
 
 # %%
 
+
 def summarize_results(dataset: list[QCQuestion]) -> dict:
     """
     Calculate summary statistics for the results of the evaluation.
@@ -620,8 +693,15 @@ def summarize_results(dataset: list[QCQuestion]) -> dict:
     log["med_score"] = pd.Series(scores).median()
 
     answers_letters = [q.question.answer_matching_behavior[0] for q in dataset]
-    log["answer_balance"] = Counter([getattr(q.question.answers, l) for q, l in zip(dataset, answers_letters)])
-    log["category_balance"] = Counter([q.question.behavior_category for q in dataset])
+    log["answer_balance"] = Counter(
+        [
+            getattr(q.question.answers, l)
+            for q, l in zip(dataset, answers_letters)
+        ]
+    )
+    log["category_balance"] = Counter(
+        [q.question.behavior_category for q in dataset]
+    )
 
     return log
 
@@ -637,7 +717,10 @@ if MAIN:
 
 # %%
 
-def filter_dataset(dataset: list[QCQuestion], min_score: int) -> list[QCQuestion]:
+
+def filter_dataset(
+    dataset: list[QCQuestion], min_score: int
+) -> list[QCQuestion]:
     """
     Returns a filtered dataset, based on the minimum and maximum score.
     """
@@ -651,6 +734,7 @@ if MAIN:
     print(f"Length after filtering for >=9 scores: {len(filtered_dataset)}")
 
 # %%
+
 
 def generate_and_score_questions(
     num_qs: int = 20,
@@ -680,14 +764,23 @@ def generate_and_score_questions(
     messages_list = [gen_prompts.get_messages() for _ in range(num_qs)]
 
     # Generate responses (i.e. the new questions), as lists of dicts
-    questions_to_score = generate_structured_responses_with_threadpool(model, messages_list, response_format=Question)
+    questions_to_score = generate_structured_responses_with_threadpool(
+        model, messages_list, response_format=Question
+    )
 
     # Create our scoring messages (one for each of the new questions)
     messages = [{"role": "system", "content": rubric}]
     for ex in scoring_examples:
-        messages.append({"role": "user", "content": ex.question.model_dump_json()})
-        messages.append({"role": "assistant", "content": ex.response.model_dump_json()})
-    messages_list = [messages + [{"role": "user", "content": json.dumps(q)}] for q in questions_to_score]
+        messages.append(
+            {"role": "user", "content": ex.question.model_dump_json()}
+        )
+        messages.append(
+            {"role": "assistant", "content": ex.response.model_dump_json()}
+        )
+    messages_list = [
+        messages + [{"role": "user", "content": json.dumps(q)}]
+        for q in questions_to_score
+    ]
 
     # Get model responses & scores
     responses = generate_structured_responses_with_threadpool(
@@ -710,7 +803,10 @@ def generate_and_score_questions(
         "SYSTEM_PROMPT": system_prompt,
         "USER_PROMPT": user_prompt,
     }
-    with open(section_dir / f"{evaluation_target}_{num_qs}_qs__v{version:02}.json", "w") as f:
+    with open(
+        section_dir / f"{evaluation_target}_{num_qs}_qs__v{version:02}.json",
+        "w",
+    ) as f:
         json.dump(data, f)
 
     return dataset
@@ -727,7 +823,14 @@ if MAIN:
         }
         for ex in dataset
     ]
-    print(tabulate(data, headers="keys", tablefmt="simple_grid", maxcolwidths=[40, 60, None]))
+    print(
+        tabulate(
+            data,
+            headers="keys",
+            tablefmt="simple_grid",
+            maxcolwidths=[40, 60, None],
+        )
+    )
 
     # Create & save a larger dataset (we need to make sure we're filtering appropriately)
 
@@ -736,15 +839,21 @@ if MAIN:
 if MAIN:
     dataset = []
     num_qs_total = 300
-    
+
     while len(dataset) < num_qs_total:
         num_qs_to_generate = num_qs_total - len(dataset)
-        new_dataset = filter_dataset(generate_and_score_questions(num_qs=num_qs_to_generate), min_score=9)
+        new_dataset = filter_dataset(
+            generate_and_score_questions(num_qs=num_qs_to_generate), min_score=9
+        )
         dataset.extend(new_dataset)
-        print(f"Generated {len(new_dataset)} new qs, have {len(dataset)}/{num_qs_total} total qs")
-    
+        print(
+            f"Generated {len(new_dataset)} new qs, have {len(dataset)}/{num_qs_total} total qs"
+        )
+
     # Save the dataset to a JSON file
-    with open(section_dir / f"{evaluation_target}_{num_qs_total}_qs.json", "w") as f:
+    with open(
+        section_dir / f"{evaluation_target}_{num_qs_total}_qs.json", "w"
+    ) as f:
         json.dump([d.question.model_dump() for d in dataset], f)
 
 # %%

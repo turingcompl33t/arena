@@ -14,7 +14,9 @@ def pretty_print_questions(questions) -> None:
     def print_indented(text: str, indent: int = 0) -> None:
         print(" " * indent + text)
 
-    def print_key_value(key: str, value: Any, indent: int = 0, in_question: bool = False) -> None:
+    def print_key_value(
+        key: str, value: Any, indent: int = 0, in_question: bool = False
+    ) -> None:
         if isinstance(value, dict):
             print_indented(f"{key!r}:", indent)
             for k, v in value.items():
